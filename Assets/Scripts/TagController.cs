@@ -51,7 +51,7 @@ namespace COMP476A1
         /// <summary>
         /// Maximum speed of this character
         /// </summary>
-        public float MaxSpeed => this.maxSpeed * (this.isTag ? 1.2f : 1f);
+        public float MaxSpeed => this.maxSpeed * (this.isTag ? 1.25f : 1f);
 
         /// <summary>
         /// Maximum rotational speed of this character, in degrees/s
@@ -83,6 +83,11 @@ namespace COMP476A1
             get => this.isTarget;
             set => this.isTarget = value;
         }
+
+        /// <summary>
+        /// If this character has been frozen by the tag
+        /// </summary>
+        public bool IsFrozen { get; private set; }
         #endregion
 
         #region Functions
@@ -105,9 +110,9 @@ namespace COMP476A1
         {
             //Let the strategy decide how the character moves
             (Vector2 velocity, float rotation) = this.strategy.OnFixedUpdate();
-            this.Velocity = Vector2.ClampMagnitude(velocity, this.maxSpeed);
-            this.Position = GridUtils.WrapPosition(this.Position + velocity * Time.fixedDeltaTime);
-            this.Rotation += Mathf.Clamp(rotation, -this.maxRotation, this.maxRotation) * Time.fixedDeltaTime;
+            this.Velocity = Vector2.ClampMagnitude(velocity, this.MaxSpeed);
+            this.Position = GridUtils.WrapPosition(this.Position + this.Velocity * Time.fixedDeltaTime);
+            this.Rotation += Mathf.Clamp(rotation, -this.MaxRotation, this.MaxRotation) * Time.fixedDeltaTime;
         }
         #endregion
     }

@@ -28,7 +28,7 @@ namespace COMP476A1
         public TagController Tag
         {
             get => this.tagged;
-            set
+            private set
             {
                 if (this.tagged)
                 {
@@ -47,7 +47,7 @@ namespace COMP476A1
         public TagController Target
         {
             get => this.target;
-            set
+            private set
             {
                 if (this.target)
                 {
@@ -56,6 +56,20 @@ namespace COMP476A1
 
                 this.target = value;
                 this.target.IsTarget = true;
+            }
+        }
+        #endregion
+
+        #region Methods
+        /// <summary>
+        /// Sets a new Target for the Tag
+        /// </summary>
+        /// <param name="newTarget">New target to set</param>
+        public void SetTarget(TagController newTarget)
+        {
+            if (this.Target != newTarget)
+            {
+                this.Target = newTarget;
             }
         }
         #endregion
@@ -76,6 +90,23 @@ namespace COMP476A1
             TagController[] players = FindObjectsOfType<TagController>();
             this.Tag = players[Random.Range(0, players.Length)];
             this.Targets = players.Where(p => p != this.Tag).ToArray();
+        }
+
+        private void Start()
+        {
+            //Find closest target to tag
+            TagController temp = this.Targets[0];
+            float distance = (GridUtils.ProjectPosition(this.Tag.Position, temp.Position) - this.Tag.Position).magnitude;
+            for (int i = 1; i < this.Targets.Length; i++)
+            {
+                TagController t = this.Targets[i];
+                if ((GridUtils.ProjectPosition(this.Tag.Position, t.Position) - this.Tag.Position).magnitude < distance)
+                {
+                    temp = t;
+                }
+            }
+            //Set target
+            this.Target = temp;
         }
         #endregion
     }
