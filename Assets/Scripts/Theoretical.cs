@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace A1
+namespace COMP476A1
 {
     /// <summary>
     /// Calculates the Theoretical part of the Assignment
