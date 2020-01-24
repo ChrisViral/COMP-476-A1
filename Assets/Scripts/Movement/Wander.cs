@@ -26,16 +26,16 @@ namespace COMP476A1.Movement
         /// <summary>
         /// Calculates the Strategy's new velocity and rotation angle for this frame
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A tuple containing the new velocity and orientation angle of the character</returns>
         public override (Vector2, float) OnFixedUpdate()
         {
-            //Change the facing angle with the PerlinNoise
-            float angle = this.Controller.Rotation + ((Mathf.PerlinNoise(this.perlinSeed, Time.fixedTime) - 0.5f) * 2f * this.Controller.MaxRotation * Time.fixedDeltaTime);
+            //Get the change in angle from the
+            float rotation = (Mathf.PerlinNoise(this.perlinSeed, Time.fixedTime) - 0.5f) * 2f * this.Controller.MaxRotation;
             //Set velocity direction from the rotation angle
-            float velAngle = -angle * Mathf.Deg2Rad;
-            Vector2 velocity = new Vector2(Mathf.Sin(velAngle), Mathf.Cos(velAngle)) * (this.Controller.MaxSpeed * Time.fixedDeltaTime);
+            float velAngle = -(this.Controller.Rotation + (rotation * Time.fixedDeltaTime)) * Mathf.Deg2Rad;
+            Vector2 velocity = new Vector2(Mathf.Sin(velAngle), Mathf.Cos(velAngle)) * this.Controller.MaxSpeed;
             //Return new position and angle
-            return (this.Controller.Position + velocity, angle);
+            return (velocity, rotation);
         }
         #endregion
     }

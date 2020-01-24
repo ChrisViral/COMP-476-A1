@@ -3,16 +3,16 @@
 namespace COMP476A1.Movement
 {
     /// <summary>
-    /// Arrive movement Strategy
+    /// Tag movement Strategy
     /// </summary>
-    public class Arrive : Strategy
+    public class Tag : Strategy
     {
         #region Constructor
         /// <summary>
-        /// Creates a new Strategy attached to the given TagController
+        /// Creates a new Tag movement Strategy attached to the given TagController
         /// </summary>
         /// <param name="controller">TagController to attach this Strategy to</param>
-        public Arrive(TagController controller) : base(controller) { }
+        public Tag(TagController controller) : base(controller) { }
         #endregion
 
         #region Methods
@@ -21,7 +21,11 @@ namespace COMP476A1.Movement
         /// TODO: Implement this properly
         /// </summary>
         /// <returns>A tuple containing the new position and orientation angle of the character</returns>
-        public override (Vector2, float) OnFixedUpdate() => (this.Controller.Position, this.Controller.Rotation);
+        public override (Vector2, float) OnFixedUpdate()
+        {
+            //Vector2 targetPath = GridUtils.ProjectPosition(this.Controller.Position, GameLogic.Instance.Target.Position);
+            return (this.Controller.Velocity, this.Controller.Rotation);
+        }
         #endregion
     }
 }

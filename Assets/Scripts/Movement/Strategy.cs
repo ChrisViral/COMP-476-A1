@@ -33,10 +33,10 @@ namespace COMP476A1.Movement
 
         #region Abstract methods
         /// <summary>
-        /// Calculates the Strategy's new position and angle each frame
+        /// Calculates the Strategy's new velocity and angle each frame
         /// </summary>
-        /// <returns>A tuple containing the new position and orientation angle of the character</returns>
-        public abstract (Vector2 position, float angle) OnFixedUpdate();
+        /// <returns>A tuple containing the new velocity and rotation of the character</returns>
+        public abstract (Vector2 velocity, float rotation) OnFixedUpdate();
         #endregion
 
         #region Static methods
@@ -53,7 +53,7 @@ namespace COMP476A1.Movement
                 case Strategies.WANDER:
                     return new Wander(controller);
                 case Strategies.ARRIVE:
-                    return new Arrive(controller);
+                    return new Tag(controller);
                 default:
                     return null;
             }
