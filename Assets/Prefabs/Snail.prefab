@@ -271,7 +271,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxSpeed: 1
-  maxRotation: 60
+  maxRotation: 45
+  slowModifier: 0.3
+  minSidestepDistance: 1
+  angleModifier: 30
   initialStrategy: 0
   isTag: 0
   isTarget: 0

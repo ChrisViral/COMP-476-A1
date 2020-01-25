@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using UnityEngine;
 
 namespace COMP476A1.Movement
@@ -37,7 +38,7 @@ namespace COMP476A1.Movement
             float targetDistance = toTarget.magnitude;
 
             //Check for a potential target switch
-            foreach (TagController t in GameLogic.Instance.Targets.Where(t => !t.IsFrozen))
+            foreach (TagController t in GameLogic.Instance.Targets.Where(t => !t.IsFrozen && t != target))
             {
                 //Check distance to potential switch
                 Vector2 to = GridUtils.ProjectPosition(this.Controller.Position, t.Position) - this.Controller.Position;
@@ -52,12 +53,36 @@ namespace COMP476A1.Movement
                     break;
                 }
             }
-
-            //Calculate time to reach target, and update future position
+            //Calculate pursue target with velocities
             float reachTime = targetDistance / this.Controller.MaxSpeed;
-            toTarget += target.Velocity * reachTime;
-            float rotation = Mathf.DeltaAngle(this.Controller.Rotation, Vector2.SignedAngle(Vector2.up, toTarget));
-            return (toTarget, rotation);
+            toTarget += toTarget + target.Velocity * reachTime;
+            Vector2 velocity = toTarget.normalized * this.Controller.MaxSpeed;
+            //Calculate angle to target and necessary rotation
+            float deltaAngle = Mathf.DeltaAngle(this.Controller.Rotation, Vector2.SignedAngle(Vector2.up, toTarget));
+            float rotation = Mathf.Abs(deltaAngle) <= 0.05f * this.Controller.MaxRotation ? deltaAngle : this.Controller.MaxRotation * Mathf.Sign(deltaAngle);
+
+            //Case when not moving
+            if (this.Controller.IsStationary)
+            {
+                //If within sidestep range, do not rotate, simply step that way
+                if (targetDistance <= this.Controller.MinSidestepDistance)
+                {
+                    rotation = 0f;
+                }
+                //Else if the target is not in front of us, keep turning without moving
+                else if (Math.Abs(deltaAngle) > this.Controller.DepartAngle)
+                {
+                    velocity = Vector2.zero;
+                }
+            }
+            //If moving and target outside of perception cone, stop
+            else if (Math.Abs(deltaAngle) > this.Controller.ConeAngle)
+            {
+                velocity = Vector2.zero;
+            }
+
+            //Return velocity and rotation
+            return (velocity, rotation);
         }
         #endregion
     }

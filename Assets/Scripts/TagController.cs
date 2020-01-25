@@ -8,11 +8,15 @@ namespace COMP476A1
     {
         #region Fields
         [SerializeField]
-        private float maxSpeed = 1f, maxRotation = 60f;
+        private float maxSpeed = 1f, maxRotation = 45f;
+        [SerializeField]
+        private float slowModifier = 0.3f, minSidestepDistance = 1f;
+        [SerializeField]
+        private float angleModifier = 30f;
         [SerializeField]
         private Strategies initialStrategy = Strategies.WANDER;
         [SerializeField]
-        private bool isTag, isTarget;
+        private bool isTag, isTarget, isFrozen;
         [SerializeField]
         private Material tagMaterial, frozenMaterial;
         private Strategy strategy;
@@ -57,6 +61,26 @@ namespace COMP476A1
         /// Maximum rotational speed of this character, in degrees/s
         /// </summary>
         public float MaxRotation => this.maxRotation;
+
+        /// <summary>
+        /// If this character is considered stationary or not
+        /// </summary>
+        public bool IsStationary => this.Velocity.magnitude < this.MaxSpeed * this.slowModifier;
+
+        /// <summary>
+        /// Minimum distance at which a character can attempt to sidestep to it's target
+        /// </summary>
+        public float MinSidestepDistance => this.minSidestepDistance;
+
+        /// <summary>
+        /// The speed dependent perception cone angle, clamped between 10 and 90
+        /// </summary>
+        public float ConeAngle => Mathf.Clamp(this.angleModifier / this.Velocity.magnitude, 10f, 90f);
+
+        /// <summary>
+        /// Angle at which the character can start moving towards the target at max speed
+        /// </summary>
+        public float DepartAngle => Mathf.Clamp(this.angleModifier / this.MaxSpeed, 10f, 90f);
 
         /// <summary>
         /// If this character is the Tag
