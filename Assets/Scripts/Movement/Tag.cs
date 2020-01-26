@@ -1,4 +1,3 @@
-﻿using System;
 using System.Linq;
 using UnityEngine;
 
@@ -70,13 +69,13 @@ namespace COMP476A1.Movement
                     rotation = 0f;
                 }
                 //Else if the target is not in front of us, keep turning without moving
-                else if (Math.Abs(deltaAngle) > this.Controller.DepartAngle)
+                else if (Mathf.Abs(deltaAngle) > this.Controller.DepartAngle)
                 {
                     velocity = Vector2.zero;
                 }
             }
             //If moving and target outside of perception cone, stop
-            else if (Math.Abs(deltaAngle) > this.Controller.ConeAngle)
+            else if (Mathf.Abs(deltaAngle) > this.Controller.ConeAngle)
             {
                 velocity = Vector2.zero;
             }
