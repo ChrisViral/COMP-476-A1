@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 
 namespace COMP476A1.Movement
@@ -48,7 +48,7 @@ namespace COMP476A1.Movement
                     target = t;
                     toTarget = to;
                     targetDistance = dist;
-                    GameLogic.Instance.SetTarget(target);
+                    GameLogic.Instance.Target = target;
                     break;
                 }
             }

@@ -10,6 +10,8 @@ namespace COMP476A1
         [SerializeField]
         private float maxSpeed = 1f, maxRotation = 45f;
         [SerializeField]
+        private float timeToTarget = 0.5f;
+        [SerializeField]
         private float slowModifier = 0.3f, minSidestepDistance = 1f;
         [SerializeField]
         private float angleModifier = 30f;
@@ -19,6 +21,7 @@ namespace COMP476A1
         private bool isTag, isTarget, isFrozen;
         [SerializeField]
         private Material tagMaterial, frozenMaterial;
+        private bool setup;
         private Strategy strategy;
         private new Renderer renderer;
         #endregion
@@ -63,6 +66,11 @@ namespace COMP476A1
         public float MaxRotation => this.maxRotation;
 
         /// <summary>
+        /// Arrive TimeToTarget value
+        /// </summary>
+        public float TimeToTarget => this.timeToTarget;
+
+        /// <summary>
         /// If this character is considered stationary or not
         /// </summary>
         public bool IsStationary => this.Velocity.magnitude < this.MaxSpeed * this.slowModifier;
@@ -91,10 +99,13 @@ namespace COMP476A1
             set
             {
                 this.isTag = value;
-                this.strategy = new Tag(this);
-                if (this.renderer && this.tagMaterial)
+                if (value)
                 {
-                    this.renderer.material = this.tagMaterial;
+                    this.strategy = new Tag(this);
+                    if (this.renderer && this.tagMaterial)
+                    {
+                        this.renderer.material = this.tagMaterial;
+                    }
                 }
             }
         }
@@ -105,7 +116,11 @@ namespace COMP476A1
         public bool IsTarget
         {
             get => this.isTarget;
-            set => this.isTarget = value;
+            set
+            {
+                this.isTarget = value;
+                this.strategy = value ? new Target(this) : new Wander(this) as Strategy;
+            }
         }
 
         /// <summary>
@@ -114,21 +129,25 @@ namespace COMP476A1
         public bool IsFrozen { get; private set; }
         #endregion
 
-        #region Functions
-        private void Awake()
+        #region Methods
+        /// <summary>
+        /// Sets up all components to properly use this TagController
+        /// Automatically called by Awake(), but can be called early if needed
+        /// </summary>
+        public void SetupComponents()
         {
-            //Gets the Rigidbody and sets the initial strategy
-            this.Rigidbody = GetComponent<Rigidbody2D>();
-            this.renderer = GetComponentInChildren<Renderer>();
-            if (this.renderer && this.tagMaterial && this.IsTag)
+            if (!this.setup)
             {
-                this.renderer.material = this.tagMaterial;
-            }
-            if (this.strategy == null)
-            {
+                this.Rigidbody = GetComponent<Rigidbody2D>();
+                this.renderer = GetComponentInChildren<Renderer>();
                 this.strategy = Strategy.CreateStrategy(this.initialStrategy, this);
+                this.setup = true;
             }
         }
+        #endregion
+
+        #region Functions
+        private void Awake() => SetupComponents();
 
         private void FixedUpdate()
         {

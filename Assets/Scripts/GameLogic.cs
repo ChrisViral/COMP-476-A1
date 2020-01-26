@@ -15,7 +15,28 @@ namespace COMP476A1
         public static GameLogic Instance { get; private set; }
         #endregion
 
+        #region Constants
+        /// <summary>
+        /// Limit at which players can be placed on the grid
+        /// </summary>
+        public const float PLACEMENT_LIMIT = GridUtils.GRID_SIZE * 0.9f;
+        #endregion
+
+        #region Fields
+        [SerializeField]
+        private int playersCount = 5;
+        [SerializeField]
+        private TagController playerPrefab;
+        [SerializeField]
+        private Transform world;
+        #endregion
+
         #region Properties
+        /// <summary>
+        /// Array of all the players
+        /// </summary>
+        public TagController[] Players { get; private set; }
+
         /// <summary>
         /// Array of all targets for the Tag
         /// </summary>
@@ -47,53 +68,40 @@ namespace COMP476A1
         public TagController Target
         {
             get => this.target;
-            private set
+            set
             {
-                if (this.target)
+                if (this.target != value)
                 {
-                    this.target.IsTarget = false;
-                }
+                    if (this.target)
+                    {
+                        this.target.IsTarget = false;
+                    }
 
-                this.target = value;
-                this.target.IsTarget = true;
+                    this.target = value;
+                    this.target.IsTarget = true;
+                }
             }
         }
         #endregion
 
         #region Methods
-        /// <summary>
-        /// Sets a new Target for the Tag
-        /// </summary>
-        /// <param name="newTarget">New target to set</param>
-        public void SetTarget(TagController newTarget)
+        private void PlacePlayers()
         {
-            if (this.Target != newTarget)
+            //Setup player array
+            this.Players = new TagController[this.playersCount];
+
+            //Create the right amount of players
+            for (int i = 0; i < this.playersCount; i++)
             {
-                this.Target = newTarget;
+                TagController player = Instantiate(this.playerPrefab, this.world);
+                this.Players[i] = player;
+                player.SetupComponents();
+                player.Position = new Vector2(Random.value - 0.5f, Random.value - 0.5f) * PLACEMENT_LIMIT;
             }
-        }
-        #endregion
 
-        #region Functions
-        private void Awake()
-        {
-            //Make sure only one Singleton instance
-            if (Instance != null)
-            {
-                Destroy(this.gameObject);
-                return;
-            }
-            Instance = this;
-            DontDestroyOnLoad(this);
+            this.Tag = this.Players[Random.Range(0, this.playersCount)];
+            this.Targets = this.Players.Where(p => p != this.Tag).ToArray();
 
-            //Get all Characters
-            TagController[] players = FindObjectsOfType<TagController>();
-            this.Tag = players[Random.Range(0, players.Length)];
-            this.Targets = players.Where(p => p != this.Tag).ToArray();
-        }
-
-        private void Start()
-        {
             //Find closest target to tag
             TagController temp = this.Targets[0];
             float distance = (GridUtils.ProjectPosition(this.Tag.Position, temp.Position) - this.Tag.Position).magnitude;
@@ -107,6 +115,25 @@ namespace COMP476A1
             }
             //Set target
             this.Target = temp;
+        }
+        #endregion
+
+        #region Functions
+        private void Awake()
+        {
+            //Make sure only one Singleton instance
+            if (Instance != null)
+            {
+                Destroy(this.gameObject);
+                return;
+            }
+            //Initialize instance
+            Instance = this;
+            DontDestroyOnLoad(this);
+            Random.InitState(new System.Random().Next());
+
+            //Setup players
+            PlacePlayers();
         }
         #endregion
     }
