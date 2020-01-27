@@ -1,8 +1,19 @@
 ﻿using System.Linq;
+using COMP476A1.UI;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace COMP476A1
 {
+    /// <summary>
+    /// Unity Game Scenes
+    /// </summary>
+    public enum GameScenes
+    {
+        MENU  = 0,
+        WORLD = 1
+    }
+
     /// <summary>
     /// Singleton GameLogic object
     /// </summary>
@@ -20,6 +31,37 @@ namespace COMP476A1
         /// Limit at which players can be placed on the grid
         /// </summary>
         public const float PLACEMENT_LIMIT = GridUtils.GRID_SIZE * 0.9f;
+
+        /// <summary>
+        /// Tag of the world plane GameObject
+        /// </summary>
+        private const string planeTag = "Plane";
+
+        /// <summary>
+        /// Tag of the Pause Menu GameObject
+        /// </summary>
+        private const string pauseMenuTag = "Menu";
+        #endregion
+
+        #region Static properties
+        private static bool isPaused;
+        /// <summary>
+        /// If the game is currently paused
+        /// </summary>
+        public static bool IsPaused
+        {
+            get => isPaused;
+            internal set
+            {
+                //Check if the value has changed
+                if (isPaused != value)
+                {
+                    //Set value and stop Unity time
+                    isPaused = value;
+                    Time.timeScale = isPaused ? 0f : 1f;
+                }
+            }
+        }
         #endregion
 
         #region Fields
@@ -27,8 +69,8 @@ namespace COMP476A1
         private int playersCount = 5;
         [SerializeField]
         private TagController playerPrefab;
-        [SerializeField]
         private Transform world;
+        private PauseMenu pauseMenu;
         #endregion
 
         #region Properties
@@ -82,6 +124,11 @@ namespace COMP476A1
                 }
             }
         }
+
+        /// <summary>
+        /// Current GameScene
+        /// </summary>
+        public GameScenes Scene { get; private set; }
         #endregion
 
         #region Methods
@@ -121,8 +168,7 @@ namespace COMP476A1
             //If none, the tag has won
             if (valid.Length == 0)
             {
-                //TODO: Win condition
-                Time.timeScale = 0f;
+                this.pauseMenu.GameOver();
                 return;
             }
 
@@ -141,6 +187,46 @@ namespace COMP476A1
             //Set target
             this.Target = newTarget;
         }
+
+        /// <summary>
+        /// Scene loaded event
+        /// </summary>
+        /// <param name="scene">Scene that has been loaded</param>
+        /// <param name="mode">Scene load mode</param>
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            //Set scene
+            this.Scene = (GameScenes)scene.buildIndex;
+
+            if (this.Scene == GameScenes.WORLD)
+            {
+                //If in game scene, setup
+                this.world = GameObject.FindGameObjectWithTag(planeTag).transform;
+                this.pauseMenu = FindObjectOfType<PauseMenu>();
+                this.pauseMenu.gameObject.SetActive(false);
+                PlacePlayers();
+            }
+        }
+        #endregion
+
+        #region Static methods
+        /// <summary>
+        /// Quits the game irregardless of play mode
+        /// </summary>
+        public static void Quit()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+
+        /// <summary>
+        /// Loads the given scene
+        /// </summary>
+        /// <param name="scene"></param>
+        public static void LoadScene(GameScenes scene) => SceneManager.LoadScene((int)scene);
         #endregion
 
         #region Functions
@@ -156,9 +242,16 @@ namespace COMP476A1
             Instance = this;
             DontDestroyOnLoad(this);
             Random.InitState(new System.Random().Next());
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
 
-            //Setup players
-            PlacePlayers();
+        private void Update()
+        {
+            //Pause handling
+            if (this.Scene == GameScenes.WORLD && !IsPaused && Input.GetKeyDown(KeyCode.Escape))
+            {
+                this.pauseMenu.Show(true);
+            }
         }
         #endregion
     }
