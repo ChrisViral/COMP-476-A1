@@ -85,6 +85,9 @@ namespace COMP476A1
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Setup the grid and place the players randomly around
+        /// </summary>
         private void PlacePlayers()
         {
             //Setup player array
@@ -107,15 +110,23 @@ namespace COMP476A1
             SetClosestTarget();
         }
 
+        /// <summary>
+        /// Set the new target as the closest to the current tag
+        /// </summary>
         public void SetClosestTarget()
         {
-            //Find closest target to tag
+            //Find valid targets
             TagController[] valid = this.Targets.Where(t => !t.IsFrozen).ToArray();
+
+            //If none, the tag has won
             if (valid.Length == 0)
             {
                 //TODO: Win condition
+                Time.timeScale = 0f;
                 return;
             }
+
+            //Find closest valid target
             TagController newTarget = valid[0];
             float distance = GridUtils.GetShortestDirection(this.Tag.Position, newTarget.Position).magnitude;
             for (int i = 1; i < valid.Length; i++)

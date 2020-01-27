@@ -2,6 +2,9 @@
 
 namespace COMP476A1.Movement
 {
+    /// <summary>
+    /// Arrive movement strategy
+    /// </summary>
     public class Arrive : Strategy
     {
         #region Constructors
@@ -19,7 +22,7 @@ namespace COMP476A1.Movement
         /// <returns>A tuple containing the new velocity and rotation of the character</returns>
         public override (Vector2 velocity, float rotation) OnFixedUpdate()
         {
-            //Get tag information
+            //Get target information
             TagController target = this.Controller.Assigned;
             Vector2 toTarget = GridUtils.GetShortestDirection(this.Controller.Position, target.Position);
             float targetDistance = toTarget.magnitude;
@@ -27,7 +30,7 @@ namespace COMP476A1.Movement
             //Calculate velocity to target
             float speed = targetDistance >= this.Controller.SatisfactionRadius ? this.Controller.MaxSpeed : Mathf.Min(this.Controller.MaxSpeed, targetDistance / this.Controller.TimeToTarget);
             Vector2 velocity = toTarget.normalized * speed;
-            //Calculate angle away from tag and necessary rotation
+            //Calculate angle to target and necessary rotation
             float deltaAngle = Mathf.DeltaAngle(this.Controller.Rotation, Vector2.SignedAngle(Vector2.up, toTarget));
             float rotation = Mathf.Abs(deltaAngle) <= 0.05f * this.Controller.MaxRotation ? deltaAngle : this.Controller.MaxRotation * Mathf.Sign(deltaAngle);
 

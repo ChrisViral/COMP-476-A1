@@ -2,6 +2,9 @@
 
 namespace COMP476A1.Movement
 {
+    /// <summary>
+    /// Target movement strategy
+    /// </summary>
     public class Target : Strategy
     {
         #region Constructors

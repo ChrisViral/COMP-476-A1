@@ -16,6 +16,9 @@ namespace COMP476A1
         THAW
     }
 
+    /// <summary>
+    /// Tag Character Controller
+    /// </summary>
     [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
     public class TagController : MonoBehaviour
     {

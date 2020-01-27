@@ -3,15 +3,6 @@ using UnityEngine;
 namespace COMP476A1.Movement
 {
     /// <summary>
-    /// Strategies enum
-    /// </summary>
-    public enum Strategies
-    {
-        WANDER,
-        ARRIVE
-    }
-
-    /// <summary>
     /// Movement Strategy
     /// </summary>
     public abstract class Strategy
