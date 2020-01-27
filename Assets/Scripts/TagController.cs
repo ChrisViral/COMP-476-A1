@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using COMP476A1.Movement;
 using UnityEngine;
 
@@ -97,6 +97,11 @@ namespace COMP476A1
         public float TimeToTarget => this.timeToTarget;
 
         /// <summary>
+        /// Arrive satisfaction radius
+        /// </summary>
+        public float SatisfactionRadius => this.satisfactionRadius;
+
+        /// <summary>
         /// If this character is considered stationary or not
         /// </summary>
         public bool IsStationary => this.Velocity.magnitude < this.MaxSpeed * this.slowModifier;
@@ -139,6 +144,11 @@ namespace COMP476A1
                         this.strategy = new Target(this);
                         this.renderer.material = this.targetMaterial;
                         this.gameObject.layer = LayerMask.NameToLayer(targetLayer);
+                        if (this.Assigned)
+                        {
+                            this.Assigned.Assigned = null;
+                            this.Assigned = null;
+                        }
                         break;
 
                     case TagState.FROZEN:
@@ -177,6 +187,11 @@ namespace COMP476A1
         /// If this character has been frozen by the tag
         /// </summary>
         public bool IsFrozen => this.State == TagState.FROZEN;
+
+        /// <summary>
+        /// TagController this controller is assigned to
+        /// </summary>
+        public TagController Assigned { get; private set; }
         #endregion
 
         #region Methods
@@ -199,6 +214,34 @@ namespace COMP476A1
         #region Functions
         private void Awake() => SetupComponents();
 
+        private void Update()
+        {
+            //Check if anyone is assigned to thaw this character
+            if (this.State == TagState.FROZEN && !this.Assigned)
+            {
+                //If not find the closest available character
+                TagController request = null;
+                float distance = GridUtils.GRID_SIZE * 2;
+                foreach (TagController player in GameLogic.Instance.Targets.Where(t => t.State == TagState.WANDER))
+                {
+                    float d = GridUtils.GetShortestDirection(this.Position, player.Position).magnitude;
+                    if (d < distance)
+                    {
+                        request = player;
+                        distance = d;
+                    }
+                }
+
+                //Assign if one exists
+                if (request != null)
+                {
+                    this.Assigned = request;
+                    this.Assigned.State = TagState.THAW;
+                    this.Assigned.Assigned = this;
+                }
+            }
+        }
+
         private void FixedUpdate()
         {
             //Let the strategy decide how the character moves
@@ -214,11 +257,11 @@ namespace COMP476A1
             TagController controller = other.GetComponent<TagController>();
             if (controller)
             {
-                //Take according action
                 switch (this.State)
                 {
                     case TagState.TAG:
                     {
+                        //If tag and collide with target, freeze it
                         if (controller.IsTarget)
                         {
                             controller.State = TagState.FROZEN;
@@ -226,13 +269,19 @@ namespace COMP476A1
                         return;
                     }
 
-                    case TagState.THAW:
+                    case TagState.FROZEN:
                     {
-                        if (controller.IsFrozen)
+                        //If frozen and none-tag collides, thaw
+                        if (!controller.IsTag)
                         {
-                            controller.State = TagState.WANDER;
+                            this.State = TagState.WANDER;
+                            if (this.Assigned)
+                            {
+                                this.Assigned.Assigned = null;
+                                this.Assigned.State = TagState.WANDER;
+                                this.Assigned = null;
+                            }
                         }
-                        this.State = TagState.WANDER;
                         return;
                     }
 

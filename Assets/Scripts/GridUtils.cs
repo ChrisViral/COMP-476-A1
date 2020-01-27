@@ -2,6 +2,9 @@
 
 namespace COMP476A1
 {
+    /// <summary>
+    /// Grid utility methods
+    /// </summary>
     public static class GridUtils
     {
         #region Constants
@@ -59,6 +62,14 @@ namespace COMP476A1
             //Return wrapped position
             return target;
         }
+
+        /// <summary>
+        /// Gets the direction of the shortest path between two points on the grid
+        /// </summary>
+        /// <param name="from">Starting location</param>
+        /// <param name="to">Target location</param>
+        /// <returns>The direction that takes the shortest path to the target</returns>
+        public static Vector2 GetShortestDirection(Vector2 from, Vector2 to) => ProjectPosition(from, to) - from;
         #endregion
     }
 }

@@ -21,7 +21,7 @@ namespace COMP476A1.Movement
         {
             //Get tag information
             TagController tag = GameLogic.Instance.Tag;
-            Vector2 toTag = GridUtils.ProjectPosition(this.Controller.Position, tag.Position) - this.Controller.Position;
+            Vector2 toTag = GridUtils.GetShortestDirection(this.Controller.Position, tag.Position);
             float targetDistance = toTag.magnitude;
 
             //Calculate velocity away from tag

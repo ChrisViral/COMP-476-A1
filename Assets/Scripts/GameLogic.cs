@@ -117,11 +117,11 @@ namespace COMP476A1
                 return;
             }
             TagController newTarget = valid[0];
-            float distance = (GridUtils.ProjectPosition(this.Tag.Position, newTarget.Position) - this.Tag.Position).magnitude;
+            float distance = GridUtils.GetShortestDirection(this.Tag.Position, newTarget.Position).magnitude;
             for (int i = 1; i < valid.Length; i++)
             {
                 TagController t = valid[i];
-                if ((GridUtils.ProjectPosition(this.Tag.Position, t.Position) - this.Tag.Position).magnitude < distance)
+                if (GridUtils.GetShortestDirection(this.Tag.Position, t.Position).magnitude < distance)
                 {
                     newTarget = t;
                 }

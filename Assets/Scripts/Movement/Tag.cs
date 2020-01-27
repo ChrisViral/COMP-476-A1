@@ -41,20 +41,20 @@ namespace COMP476A1.Movement
                 //If so find new closest target
                 GameLogic.Instance.SetClosestTarget();
                 target = GameLogic.Instance.Target;
-                toTarget = GridUtils.ProjectPosition(this.Controller.Position, target.Position) - this.Controller.Position;
+                toTarget = GridUtils.GetShortestDirection(this.Controller.Position, target.Position);
                 targetDistance = toTarget.magnitude;
             }
             else
             {
                 //Else make sure no other target has ventured closer
-                toTarget = GridUtils.ProjectPosition(this.Controller.Position, target.Position) - this.Controller.Position;
+                toTarget = GridUtils.GetShortestDirection(this.Controller.Position, target.Position);
                 targetDistance = toTarget.magnitude;
 
                 //Check for a potential target switch
                 foreach (TagController t in GameLogic.Instance.Targets.Where(t => !t.IsFrozen && t != target))
                 {
                     //Check distance to potential switch
-                    Vector2 to = GridUtils.ProjectPosition(this.Controller.Position, t.Position) - this.Controller.Position;
+                    Vector2 to = GridUtils.GetShortestDirection(this.Controller.Position, t.Position);
                     float dist = to.magnitude;
                     //Only switch target if significantly closer to tag
                     if (dist < targetDistance * TARGET_CHANGE_BUFFER)
