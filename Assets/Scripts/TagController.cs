@@ -1,26 +1,52 @@
-﻿using COMP476A1.Movement;
+﻿using System;
+using COMP476A1.Movement;
 using UnityEngine;
 
 namespace COMP476A1
 {
-    [RequireComponent(typeof(Rigidbody2D))]
+    /// <summary>
+    /// State of this character
+    /// </summary>
+    public enum TagState
+    {
+        WANDER,
+        TAG,
+        TARGET,
+        FROZEN,
+        THAW
+    }
+
+    [RequireComponent(typeof(Rigidbody2D), typeof(Collider2D))]
     public class TagController : MonoBehaviour
     {
+        #region Constants
+        /// <summary>
+        /// Layer name for the tag
+        /// </summary>
+        private const string tagLayer = "Tag";
+        /// <summary>
+        /// Layer name for the target
+        /// </summary>
+        private const string targetLayer = "Target";
+        /// <summary>
+        /// Layer name for frozen
+        /// </summary>
+        private const string frozenLayer = "Frozen";
+        #endregion
+
         #region Fields
         [SerializeField]
         private float maxSpeed = 1f, maxRotation = 45f;
         [SerializeField]
-        private float timeToTarget = 0.5f;
+        private float timeToTarget = 0.5f, satisfactionRadius = 1f;
         [SerializeField]
         private float slowModifier = 0.3f, minSidestepDistance = 1f;
         [SerializeField]
         private float angleModifier = 30f;
         [SerializeField]
-        private Strategies initialStrategy = Strategies.WANDER;
+        private TagState state = TagState.WANDER;
         [SerializeField]
-        private bool isTag, isTarget, isFrozen;
-        [SerializeField]
-        private Material tagMaterial, frozenMaterial;
+        private Material tagMaterial, targetMaterial, frozenMaterial, defaultMaterial;
         private bool setup;
         private Strategy strategy;
         private new Renderer renderer;
@@ -58,7 +84,7 @@ namespace COMP476A1
         /// <summary>
         /// Maximum speed of this character
         /// </summary>
-        public float MaxSpeed => this.maxSpeed * (this.isTag ? 1.25f : 1f);
+        public float MaxSpeed => this.maxSpeed * (this.IsTag ? 1.25f : 1f);
 
         /// <summary>
         /// Maximum rotational speed of this character, in degrees/s
@@ -91,42 +117,66 @@ namespace COMP476A1
         public float DepartAngle => Mathf.Clamp(this.angleModifier / this.MaxSpeed, 10f, 90f);
 
         /// <summary>
-        /// If this character is the Tag
+        /// Current tag state of the character
         /// </summary>
-        public bool IsTag
+        public TagState State
         {
-            get => this.isTag;
+            get => this.state;
             set
             {
-                this.isTag = value;
-                if (value)
+                //Set value
+                this.state = value;
+                //Set appropriate strategy
+                switch (value)
                 {
-                    this.strategy = new Tag(this);
-                    if (this.renderer && this.tagMaterial)
-                    {
+                    case TagState.TAG:
+                        this.strategy = new Tag(this);
                         this.renderer.material = this.tagMaterial;
-                    }
+                        this.gameObject.layer = LayerMask.NameToLayer(tagLayer);
+                        break;
+
+                    case TagState.TARGET:
+                        this.strategy = new Target(this);
+                        this.renderer.material = this.targetMaterial;
+                        this.gameObject.layer = LayerMask.NameToLayer(targetLayer);
+                        break;
+
+                    case TagState.FROZEN:
+                        this.strategy = new Frozen(this);
+                        this.renderer.material = this.frozenMaterial;
+                        this.gameObject.layer = LayerMask.NameToLayer(frozenLayer);
+                        break;
+
+                    case TagState.THAW:
+                        this.strategy = new Arrive(this);
+                        this.renderer.material = this.defaultMaterial;
+                        this.gameObject.layer = 0;
+                        break;
+
+                    //Wander
+                    default:
+                        this.strategy = new Wander(this);
+                        this.renderer.material = this.defaultMaterial;
+                        this.gameObject.layer = 0;
+                        break;
                 }
             }
         }
 
         /// <summary>
+        /// If this character is the Tag
+        /// </summary>
+        public bool IsTag => this.State == TagState.TAG;
+
+        /// <summary>
         /// If this character is the current Target
         /// </summary>
-        public bool IsTarget
-        {
-            get => this.isTarget;
-            set
-            {
-                this.isTarget = value;
-                this.strategy = value ? new Target(this) : new Wander(this) as Strategy;
-            }
-        }
+        public bool IsTarget => this.State == TagState.TARGET;
 
         /// <summary>
         /// If this character has been frozen by the tag
         /// </summary>
-        public bool IsFrozen { get; private set; }
+        public bool IsFrozen => this.State == TagState.FROZEN;
         #endregion
 
         #region Methods
@@ -140,7 +190,7 @@ namespace COMP476A1
             {
                 this.Rigidbody = GetComponent<Rigidbody2D>();
                 this.renderer = GetComponentInChildren<Renderer>();
-                this.strategy = Strategy.CreateStrategy(this.initialStrategy, this);
+                this.strategy = Strategy.CreateStrategy(this.State, this);
                 this.setup = true;
             }
         }
@@ -156,6 +206,41 @@ namespace COMP476A1
             this.Velocity = Vector2.ClampMagnitude(velocity, this.MaxSpeed);
             this.Position = GridUtils.WrapPosition(this.Position + this.Velocity * Time.fixedDeltaTime);
             this.Rotation += Mathf.Clamp(rotation, -this.MaxRotation, this.MaxRotation) * Time.fixedDeltaTime;
+        }
+
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            //Get the TagController of the collider
+            TagController controller = other.GetComponent<TagController>();
+            if (controller)
+            {
+                //Take according action
+                switch (this.State)
+                {
+                    case TagState.TAG:
+                    {
+                        if (controller.IsTarget)
+                        {
+                            controller.State = TagState.FROZEN;
+                        }
+                        return;
+                    }
+
+                    case TagState.THAW:
+                    {
+                        if (controller.IsFrozen)
+                        {
+                            controller.State = TagState.WANDER;
+                        }
+                        this.State = TagState.WANDER;
+                        return;
+                    }
+
+                    //All other states take no action
+                    default:
+                        return;
+                }
+            }
         }
         #endregion
     }

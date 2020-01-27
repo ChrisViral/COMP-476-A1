@@ -46,16 +46,22 @@ namespace COMP476A1.Movement
         /// <param name="strategy">Strategy to pick</param>
         /// <param name="controller">TagController associated to the new Strategy</param>
         /// <returns>The created strategy</returns>
-        public static Strategy CreateStrategy(Strategies strategy, TagController controller)
+        public static Strategy CreateStrategy(TagState strategy, TagController controller)
         {
             switch (strategy)
             {
-                case Strategies.WANDER:
-                    return new Wander(controller);
-                case Strategies.ARRIVE:
+                case TagState.TAG:
                     return new Tag(controller);
+                case TagState.TARGET:
+                    return new Target(controller);
+                case TagState.FROZEN:
+                    return new Frozen(controller);
+                case TagState.THAW:
+                    return new Arrive(controller);
+
+                //Wander
                 default:
-                    return null;
+                    return new Wander(controller);
             }
         }
         #endregion

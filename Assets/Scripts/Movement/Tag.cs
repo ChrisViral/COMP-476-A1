@@ -33,25 +33,41 @@ namespace COMP476A1.Movement
         {
             //Get path to current target
             TagController target = GameLogic.Instance.Target;
-            Vector2 toTarget = GridUtils.ProjectPosition(this.Controller.Position, target.Position) - this.Controller.Position;
-            float targetDistance = toTarget.magnitude;
-
-            //Check for a potential target switch
-            foreach (TagController t in GameLogic.Instance.Targets.Where(t => !t.IsFrozen && t != target))
+            Vector2 toTarget;
+            float targetDistance;
+            //Check if target is frozen
+            if (target.IsFrozen)
             {
-                //Check distance to potential switch
-                Vector2 to = GridUtils.ProjectPosition(this.Controller.Position, t.Position) - this.Controller.Position;
-                float dist = to.magnitude;
-                //Only switch target if significantly closer to tag
-                if (dist < targetDistance * TARGET_CHANGE_BUFFER)
+                //If so find new closest target
+                GameLogic.Instance.SetClosestTarget();
+                target = GameLogic.Instance.Target;
+                toTarget = GridUtils.ProjectPosition(this.Controller.Position, target.Position) - this.Controller.Position;
+                targetDistance = toTarget.magnitude;
+            }
+            else
+            {
+                //Else make sure no other target has ventured closer
+                toTarget = GridUtils.ProjectPosition(this.Controller.Position, target.Position) - this.Controller.Position;
+                targetDistance = toTarget.magnitude;
+
+                //Check for a potential target switch
+                foreach (TagController t in GameLogic.Instance.Targets.Where(t => !t.IsFrozen && t != target))
                 {
-                    target = t;
-                    toTarget = to;
-                    targetDistance = dist;
-                    GameLogic.Instance.Target = target;
-                    break;
+                    //Check distance to potential switch
+                    Vector2 to = GridUtils.ProjectPosition(this.Controller.Position, t.Position) - this.Controller.Position;
+                    float dist = to.magnitude;
+                    //Only switch target if significantly closer to tag
+                    if (dist < targetDistance * TARGET_CHANGE_BUFFER)
+                    {
+                        target = t;
+                        toTarget = to;
+                        targetDistance = dist;
+                        GameLogic.Instance.Target = target;
+                        break;
+                    }
                 }
             }
+
             //Calculate pursue target with velocities
             float reachTime = targetDistance / this.Controller.MaxSpeed;
             toTarget += toTarget + target.Velocity * reachTime;

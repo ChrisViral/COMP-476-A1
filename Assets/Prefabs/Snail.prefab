@@ -215,6 +215,7 @@ GameObject:
   - component: {fileID: 6535177336893689880}
   - component: {fileID: 6535177336893840266}
   - component: {fileID: 6535177336893840261}
+  - component: {fileID: 7097775891648698724}
   m_Layer: 0
   m_Name: Snail
   m_TagString: Untagged
@@ -229,7 +230,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6535177336893968864}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -271,15 +272,32 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxSpeed: 1
-  maxRotation: 45
+  maxRotation: 60
+  timeToTarget: 0.5
   slowModifier: 0.3
   minSidestepDistance: 1
   angleModifier: 30
-  initialStrategy: 0
-  isTag: 0
-  isTarget: 0
+  state: 0
   tagMaterial: {fileID: 2100000, guid: 5e42aca7fbf62fb4eaac3f15140df75c, type: 2}
+  targetMaterial: {fileID: 2100000, guid: 00175549b60cdab4fa152201a91497c6, type: 2}
   frozenMaterial: {fileID: 2100000, guid: c026c08d5d07c5640b658edf6d221840, type: 2}
+  defaultMaterial: {fileID: 2100000, guid: 08d644d239b78bc449241f772037a21c, type: 2}
+--- !u!58 &7097775891648698724
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6535177336893968864}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.3
 --- !u!1 &6535177336893975396
 GameObject:
   m_ObjectHideFlags: 0

@@ -53,11 +53,11 @@ namespace COMP476A1
             {
                 if (this.tagged)
                 {
-                    this.tagged.IsTag = false;
+                    this.tagged.State = TagState.WANDER;
                 }
 
                 this.tagged = value;
-                this.tagged.IsTag = true;
+                this.tagged.State = TagState.TAG;
             }
         }
 
@@ -72,13 +72,13 @@ namespace COMP476A1
             {
                 if (this.target != value)
                 {
-                    if (this.target)
+                    if (this.target && !this.target.IsFrozen)
                     {
-                        this.target.IsTarget = false;
+                        this.target.State = TagState.WANDER;
                     }
 
                     this.target = value;
-                    this.target.IsTarget = true;
+                    this.target.State = TagState.TARGET;
                 }
             }
         }
@@ -97,24 +97,38 @@ namespace COMP476A1
                 this.Players[i] = player;
                 player.SetupComponents();
                 player.Position = new Vector2(Random.value - 0.5f, Random.value - 0.5f) * PLACEMENT_LIMIT;
+                player.Rotation = (Random.value - 0.5f) * 360f;
             }
 
             this.Tag = this.Players[Random.Range(0, this.playersCount)];
             this.Targets = this.Players.Where(p => p != this.Tag).ToArray();
 
             //Find closest target to tag
-            TagController temp = this.Targets[0];
-            float distance = (GridUtils.ProjectPosition(this.Tag.Position, temp.Position) - this.Tag.Position).magnitude;
-            for (int i = 1; i < this.Targets.Length; i++)
+            SetClosestTarget();
+        }
+
+        public void SetClosestTarget()
+        {
+            //Find closest target to tag
+            TagController[] valid = this.Targets.Where(t => !t.IsFrozen).ToArray();
+            if (valid.Length == 0)
             {
-                TagController t = this.Targets[i];
+                //TODO: Win condition
+                return;
+            }
+            TagController newTarget = valid[0];
+            float distance = (GridUtils.ProjectPosition(this.Tag.Position, newTarget.Position) - this.Tag.Position).magnitude;
+            for (int i = 1; i < valid.Length; i++)
+            {
+                TagController t = valid[i];
                 if ((GridUtils.ProjectPosition(this.Tag.Position, t.Position) - this.Tag.Position).magnitude < distance)
                 {
-                    temp = t;
+                    newTarget = t;
                 }
             }
+
             //Set target
-            this.Target = temp;
+            this.Target = newTarget;
         }
         #endregion
 
