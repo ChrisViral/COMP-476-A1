@@ -47,7 +47,7 @@ namespace COMP476A1
         [SerializeField]
         private float angleModifier = 30f;
         [SerializeField]
-        private TagState state = TagState.WANDER;
+        private TagState state;
         [SerializeField]
         private Material tagMaterial, targetMaterial, frozenMaterial, defaultMaterial;
         private bool setup;

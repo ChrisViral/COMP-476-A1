@@ -36,11 +36,6 @@ namespace COMP476A1
         /// Tag of the world plane GameObject
         /// </summary>
         private const string planeTag = "Plane";
-
-        /// <summary>
-        /// Tag of the Pause Menu GameObject
-        /// </summary>
-        private const string pauseMenuTag = "Menu";
         #endregion
 
         #region Static properties
@@ -203,7 +198,7 @@ namespace COMP476A1
                 //If in game scene, setup
                 this.world = GameObject.FindGameObjectWithTag(planeTag).transform;
                 this.pauseMenu = FindObjectOfType<PauseMenu>();
-                this.pauseMenu.gameObject.SetActive(false);
+                this.pauseMenu.Show(false);
                 PlacePlayers();
             }
         }
@@ -238,6 +233,7 @@ namespace COMP476A1
                 Destroy(this.gameObject);
                 return;
             }
+
             //Initialize instance
             Instance = this;
             DontDestroyOnLoad(this);
@@ -248,7 +244,7 @@ namespace COMP476A1
         private void Update()
         {
             //Pause handling
-            if (this.Scene == GameScenes.WORLD && !IsPaused && Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.Escape) && this.Scene == GameScenes.WORLD && !IsPaused)
             {
                 this.pauseMenu.Show(true);
             }
