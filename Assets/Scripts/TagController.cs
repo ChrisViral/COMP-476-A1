@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using COMP476A1.Movement;
 using UnityEngine;
 
@@ -53,6 +54,7 @@ namespace COMP476A1
         private bool setup;
         private Strategy strategy;
         private new Renderer renderer;
+        private bool onCooldown;
         #endregion
 
         #region Properties
@@ -212,6 +214,26 @@ namespace COMP476A1
                 this.setup = true;
             }
         }
+
+        /// <summary>
+        /// Setup a new tag and delay it's start
+        /// </summary>
+        /// <returns>A coroutine changing the Tag to this controller</returns>
+        private IEnumerator<YieldInstruction> SwitchTagDelayed()
+        {
+            //Setup as tag then wait 5 seconds
+            this.onCooldown = true;
+            GameLogic.Instance.Tag = this;
+            foreach (TagController target in GameLogic.Instance.Targets)
+            {
+                target.State = TagState.WANDER;
+            }
+            yield return new WaitForSeconds(5f);
+
+            //Get the closest target then start chasing
+            GameLogic.Instance.SetClosestTarget();
+            this.onCooldown = false;
+        }
         #endregion
 
         #region Functions
@@ -247,6 +269,12 @@ namespace COMP476A1
 
         private void FixedUpdate()
         {
+            //If tag on cooldown, do nothing
+            if (this.onCooldown && this.IsTag)
+            {
+                return;
+            }
+
             //Let the strategy decide how the character moves
             (Vector2 velocity, float rotation) = this.strategy.OnFixedUpdate();
             this.Velocity = Vector2.ClampMagnitude(velocity, this.MaxSpeed);
@@ -264,10 +292,22 @@ namespace COMP476A1
                 {
                     case TagState.TAG:
                     {
+                        //If on cooldown, do nothing
+                        if (this.onCooldown)
+                        {
+                            return;
+                        }
+
                         //If tag and collide with target, freeze it
                         if (controller.IsTarget)
                         {
                             controller.State = TagState.FROZEN;
+                        }
+
+                        //Check if this was the last target
+                        if (GameLogic.Instance.IsGameOver)
+                        {
+                            StartCoroutine(controller.SwitchTagDelayed());
                         }
                         return;
                     }

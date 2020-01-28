@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 
 namespace COMP476A1.UI
 {
@@ -8,13 +7,6 @@ namespace COMP476A1.UI
     /// </summary>
     public class PauseMenu : MonoBehaviour
     {
-        #region Fields
-        [SerializeField]
-        private Text title;
-        [SerializeField]
-        private Button resumeButton;
-        #endregion
-
         #region Methods
         /// <summary>
         /// Show the pause menu
@@ -23,16 +15,6 @@ namespace COMP476A1.UI
         {
             GameLogic.IsPaused = showing;
             this.gameObject.SetActive(showing);
-        }
-
-        /// <summary>
-        /// Game over actions
-        /// </summary>
-        public void GameOver()
-        {
-            Show(true);
-            this.title.text = "Game Over!";
-            this.resumeButton.interactable = false;
         }
 
         /// <summary>

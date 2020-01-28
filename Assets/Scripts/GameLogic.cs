@@ -1,7 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using COMP476A1.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 namespace COMP476A1
 {
@@ -86,15 +88,24 @@ namespace COMP476A1
         public TagController Tag
         {
             get => this.tagged;
-            private set
+            set
             {
-                if (this.tagged)
+                if (this.tagged != value)
                 {
-                    this.tagged.State = TagState.WANDER;
-                }
+                    //If it's GameOver, release the previous tag as a target
+                    if (this.IsGameOver)
+                    {
+                        this.Targets[Array.IndexOf(this.Targets, value)] = this.tagged;
+                        if (this.Target == value)
+                        {
+                            this.target = null;
+                        }
+                    }
 
-                this.tagged = value;
-                this.tagged.State = TagState.TAG;
+                    //Set the tag
+                    this.tagged = value;
+                    this.tagged.State = TagState.TAG;
+                }
             }
         }
 
@@ -124,6 +135,11 @@ namespace COMP476A1
         /// Current GameScene
         /// </summary>
         public GameScenes Scene { get; private set; }
+
+        /// <summary>
+        /// Checks if all the targets have been frozen
+        /// </summary>
+        public bool IsGameOver => this.Targets?.All(t => t.IsFrozen) ?? false;
         #endregion
 
         #region Methods
@@ -159,13 +175,6 @@ namespace COMP476A1
         {
             //Find valid targets
             TagController[] valid = this.Targets.Where(t => !t.IsFrozen).ToArray();
-
-            //If none, the tag has won
-            if (valid.Length == 0)
-            {
-                this.pauseMenu.GameOver();
-                return;
-            }
 
             //Find closest valid target
             TagController newTarget = valid[0];
